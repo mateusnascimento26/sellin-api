@@ -1,0 +1,52 @@
+# Blueprint do Render (https://render.com/docs/blueprint-spec) -- descreve os
+# 3 servicos que formam o site: o banco Postgres, a API (FastAPI) e o painel
+# (Streamlit). O Render le esse arquivo automaticamente ao conectar o
+# repositorio e oferece criar os 3 de uma vez ("New +" -> "Blueprint").
+#
+# ATENCAO: o banco Postgres do plano "free" expira 30 dias depois de criado
+# (o Render avisa por e-mail antes). Pra manter os dados depois disso, e'
+# preciso trocar o plano do banco pra um pago (ex: "starter") no dashboard do
+# Render -- os servicos de API e painel podem continuar no "free" tranquilamente.
+
+databases:
+  - name: sellin-db
+    databaseName: sellin
+    user: sellin
+    plan: free
+
+services:
+  - type: web
+    name: sellin-api
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sellin-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: MAX_UPLOAD_SIZE_BYTES
+        value: "20971520"
+      # Preencha esses dois no dashboard do Render (aba "Environment" do
+      # servico sellin-api) com o usuario/senha que voce quer usar pra
+      # entrar no painel -- ficam de fora do repositorio de proposito.
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+
+  - type: web
+    name: sellin-painel
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements-frontend.txt
+    startCommand: streamlit run streamlit_app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true
+    envVars:
+      # Endereco publico do servico sellin-api acima -- se voce mudar o nome
+      # dele no Render, atualize aqui tambem (dashboard do sellin-painel ->
+      # aba "Environment").
+      - key: API_BASE_URL
+        value: https://sellin-api.onrender.com

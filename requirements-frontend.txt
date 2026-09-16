@@ -1,0 +1,5 @@
+# Dependencias so do painel (front-end) em Streamlit -- a API (FastAPI) ja tem
+# as dependencias dela instaladas separadamente no mesmo venv.
+# Instalar com: pip install -r requirements-frontend.txt
+streamlit
+requests

@@ -21,6 +21,15 @@ load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+psycopg://sellin:sellin@localhost:5432/sellin")
 
+# Provedores de nuvem (ex: Render) costumam fornecer a URL do Postgres como
+# "postgres://..." ou "postgresql://..." (sem indicar o driver). O SQLAlchemy
+# exige o driver explícito ("+psycopg") pra usar o psycopg -- corrige aqui pra
+# não depender de colar a URL "arrumada" manualmente na variável de ambiente.
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = "postgresql+psycopg://" + DATABASE_URL[len("postgres://"):]
+elif DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = "postgresql+psycopg://" + DATABASE_URL[len("postgresql://"):]
+
 engine = create_engine(DATABASE_URL, future=True)
 SessionLocal = sessionmaker(bind=engine, future=True)
 
@@ -60,6 +69,15 @@ class SellInModel(Base):
     typology_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("typology.id"), nullable=False)
     created: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     end: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class UserModel(Base):
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    created: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
 INITIAL_TYPOLOGIES = [

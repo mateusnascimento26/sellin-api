@@ -1,0 +1,15 @@
+# Dependencias da API (back-end). Versoes fixadas iguais as que ja estao
+# instaladas e testadas no seu ambiente local -- instalar com:
+#   pip install -r requirements.txt
+fastapi==0.141.1
+uvicorn==0.52.1
+sqlalchemy==2.0.51
+psycopg[binary]==3.3.4
+python-dotenv==1.2.2
+python-multipart==0.0.32
+bcrypt==5.0.0
+pyjwt==2.13.0
+openpyxl==3.1.5
+python-pptx==1.0.2
+matplotlib==3.11.1
+pydantic==2.13.4

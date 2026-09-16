@@ -4,3 +4,8 @@ __pycache__/
 .env
 .idea/
 .pytest_cache/
+
+# Apresentacoes/graficos gerados localmente pra teste (dados reais de clientes,
+# nao devem ir pro controle de versao).
+*.pptx
+*.zip
