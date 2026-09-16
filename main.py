@@ -30,10 +30,12 @@ load_dotenv()
 
 
 def _seed_admin_user_se_configurado() -> None:
-    """Cria automaticamente um usuário de login a partir das variáveis de ambiente
-    ADMIN_USERNAME/ADMIN_PASSWORD, se elas existirem e esse usuário ainda não
-    existir -- só pra permitir configurar o primeiro login num banco novo (ex: na
-    nuvem) sem precisar de acesso a um terminal/shell pra rodar create_user.py."""
+    """Cria (ou atualiza a senha de) um usuário de login a partir das variáveis de
+    ambiente ADMIN_USERNAME/ADMIN_PASSWORD, se elas existirem -- permite configurar
+    o primeiro login num banco novo (ex: na nuvem) sem precisar de acesso a um
+    terminal/shell pra rodar create_user.py, e também "resetar" a senha depois:
+    como toda subida da API sincroniza a senha salva com o valor atual dessas
+    variáveis, basta trocar ADMIN_PASSWORD no Render e fazer um novo deploy."""
     admin_username = os.getenv("ADMIN_USERNAME")
     admin_password = os.getenv("ADMIN_PASSWORD")
     if not admin_username or not admin_password:
@@ -41,10 +43,14 @@ def _seed_admin_user_se_configurado() -> None:
 
     session = SessionLocal()
     try:
-        if session.query(UserModel).filter_by(username=admin_username).first() is None:
+        usuario = session.query(UserModel).filter_by(username=admin_username).first()
+        if usuario is None:
             session.add(UserModel(username=admin_username, password_hash=hash_password(admin_password)))
             session.commit()
             print(f"Usuário '{admin_username}' criado a partir de ADMIN_USERNAME/ADMIN_PASSWORD.")
+        else:
+            usuario.password_hash = hash_password(admin_password)
+            session.commit()
     finally:
         session.close()
 
